@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Szenzor adatok</title>
+<style>
+  body{
+    font-family: Arial;
+    background:#f2f2f2;
+    padding:20px;
+  }
+  h2{
+    color:#333;
+  }
+  #status{
+    padding:10px;
+    background:#fff3cd;
+    border:1px solid #ffeeba;
+    margin-bottom:15px;
+  }
+  #adat{
+    background:white;
+    padding:15px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:18px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Élõ szenzor adatok</h2>
+<div id="status">Kapcsolódás...</div>
+<pre id="adat">Nincs adat még...</pre>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "nem-számít",
+  authDomain: "basic-55e48.firebaseapp.com",
+  projectId: "basic-55e48",
+  databaseURL: "https://basic-55e48-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// anonim bejelentkezés
+signInAnonymously(auth);
+
+// megvárjuk a login-t
+onAuthStateChanged(auth, (user) => {
+
+  if(user){
+    document.getElementById("status").textContent = "Kapcsolódva az adatbázishoz ?";
+
+    const adatRef = ref(db, "/");
+
+    onValue(adatRef, (snapshot) => {
+
+      const adat = snapshot.val();
+
+      if(adat){
+        let szoveg = "";
+
+        for (const kulcs in adat){
+          szoveg += kulcs + " : " + adat[kulcs] + "\n";
+        }
+
+        document.getElementById("adat").textContent = szoveg;
+      }
+      else{
+        document.getElementById("adat").textContent = "Az adatbázis üres.";
+      }
+
+    });
+
+  } else {
+    document.getElementById("status").textContent = "Nincs hitelesítés";
+  }
+
+});
+
+</script>
+
+</body>
+</html>
+
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+signInAnonymously(auth);
+
+const db = getDatabase(app);
+const adatRef = ref(db, "/");
+
+onValue(adatRef, (snapshot) => {
+  document.getElementById("adat").textContent =
+    JSON.stringify(snapshot.val(), null, 2);
+});
+</script>
+
+</body>
+</html>
